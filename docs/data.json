@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T09:24:45.026117+00:00",
+ "generated_at": "2026-11-18T09:52:09.243835+00:00",
  "settings": {
   "privacy": "private",
   "max_per_day": 5,
@@ -92,9 +92,22 @@
  "failed": [],
  "streamers": [
   {
-   "login": "beispielkanal",
+   "login": "kaicenat",
    "permitted": false,
-   "proof": ""
+   "proof": "",
+   "note": "Kampagne auf Whop Content Rewards beitreten, dann den Kampagnen-Link eintragen."
+  },
+  {
+   "login": "caseoh_",
+   "permitted": false,
+   "proof": "",
+   "note": "Kein Programm bekannt: Zusage seines Teams einholen (geschaeftliche E-Mail auf seinem YouTube-Kanal)."
+  },
+  {
+   "login": "zackrawrr",
+   "permitted": false,
+   "proof": "",
+   "note": "Asmongold: nur eine alte Aussage von 2020 zu Reupload-Kanaelen, keine aktuelle Freigabe gefunden."
   }
  ],
  "youtube_connected": true
