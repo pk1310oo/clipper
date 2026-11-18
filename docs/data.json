@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T09:23:01.467276+00:00",
+ "generated_at": "2026-11-18T09:24:25.483903+00:00",
  "settings": {
   "privacy": "private",
   "max_per_day": 5,
@@ -69,7 +69,15 @@
  ],
  "recent_uploads": [],
  "uploads": [],
- "channel_daily": [],
+ "channel_daily": [
+  {
+   "date": "2026-11-18",
+   "views": 0,
+   "likes": 0,
+   "subscribers": 0,
+   "videos": 0
+  }
+ ],
  "by_streamer": [],
  "totals": {
   "views": 0,
