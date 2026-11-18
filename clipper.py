@@ -337,12 +337,12 @@ def cmd_upload(args) -> None:
     if done >= up.get("max_per_day", 5):
         raise DailyLimit(f"Tageslimit erreicht ({done} Uploads heute).")
 
-    credit = f"Clip von twitch.tv/{row['streamer']}, mit Erlaubnis.\nOriginal: {row['url']}"
+    credit = f"Clip from twitch.tv/{row['streamer']}, used with permission.\nOriginal: {row['url']}"
     description = f"{args.description}\n\n{credit}".strip()
     meta = {
         "snippet": {"title": args.title[:100], "description": description,
                     "tags": args.tags, "categoryId": "20",
-                    "defaultLanguage": up.get("language", "de")},
+                    "defaultLanguage": up.get("language", "en")},
         "status": {"privacyStatus": up.get("privacy", "private"),
                    "selfDeclaredMadeForKids": False},
     }

@@ -14,9 +14,9 @@ font = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 [upload]
 privacy = "private"     # erst auf "public" stellen, wenn Googles API-Pruefung durch ist
 max_per_day = 5
-language = "de"
+language = "en"
 
 # Ein Block pro Streamer. Ohne permission_proof wird der Streamer uebersprungen.
 [[streamer]]
 login = "beispielkanal"
-permission_proof = ""   # z. B. "E-Mail vom 20.11.2026" oder Link zur Clipping-Kampagne
+permission_proof = ""   # Link zur Clipping-Kampagne oder zur oeffentlichen Clip-Freigabe des Streamers

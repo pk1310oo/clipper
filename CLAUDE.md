@@ -19,11 +19,19 @@ du entscheidest nur, WELCHE Clips veroeffentlicht werden und WIE sie heissen.
 - Nur Streamer, die in `config.toml` einen `permission_proof` haben. Das Programm prueft das
   zusaetzlich, aber trage niemals selbst einen Nachweis ein.
 
-## Titel
-- Deutsch, hoechstens 60 Zeichen, neugierig machend, aber nicht gelogen.
+## Titel (der Kanal ist englischsprachig)
+- Englisch, hoechstens 60 Zeichen, neugierig machend, aber nicht gelogen.
 - `overlay` ist der Text im Bild: kuerzer, hoechstens ca. 45 Zeichen.
+- Beschreibung und Tags ebenfalls Englisch; die Quellenangabe haengt das Programm selbst an.
 - Kein Clickbait, das der Clip nicht einloest. Keine Beleidigungen ueber Streamer oder Zuschauer.
 - Kein "GTA" als alleiniger Titel; der Spielname darf in Titel und Tags vorkommen.
+
+## Erlaubnis-Quellen recherchieren
+Bei jedem Durchgang zusaetzlich pruefen, ob es neue Erlaubnis-Quellen fuer GTA-VI-Streamer gibt:
+- offene Clipping-Kampagnen (z. B. Whop, Kampagnen-Uebersichten wie gtaviclipper.com/board),
+- oeffentliche, ausdrueckliche Clip-Freigaben von Streamern (Bio, Panels, Posts).
+Gefundenes NUR dem Nutzer melden, mit Link, Rate, Budget und Regeln. Nichts davon selbst
+in `config.toml` eintragen: Den Eintrag macht der Nutzer bzw. erst nach seiner Bestaetigung.
 
 ## Grenzen
 - Keine Aenderungen an `.github/workflows/`, Secrets oder der Erlaubnis-Pruefung ohne Nutzer.
