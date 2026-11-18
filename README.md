@@ -13,12 +13,12 @@ und laedt sie auf YouTube hoch. Claude waehlt die Clips aus und schreibt die Tit
 
 ## Einrichtung
 1. Secrets anlegen unter Settings > Secrets and variables > Actions:
-   `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`.
-2. Actions > `auth-youtube` > Run workflow. Im Log steht ein Code und eine Adresse:
+   `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET`, `YT_CLIENT_ID`, `YT_CLIENT_SECRET`
+   und `TOKEN_KEY` (ein langes Zufallspasswort, mindestens 24 Zeichen).
+2. Actions > `auth-youtube` > Run workflow. Im Log stehen ein Code und eine Adresse:
    Adresse oeffnen, mit dem Konto des YouTube-Kanals anmelden, Code eingeben.
-3. Nach dem Lauf unten auf der Laufseite das Artefakt `youtube-token` herunterladen,
-   den Inhalt als Secret `YT_REFRESH_TOKEN` speichern und das Artefakt loeschen.
-4. In `config.toml` je Streamer mit Erlaubnis einen `[[streamer]]`-Block eintragen,
+   Der Schluessel landet verschluesselt als `youtube-token.enc` im Repository.
+3. In `config.toml` je Streamer mit Erlaubnis einen `[[streamer]]`-Block eintragen,
    mit `permission_proof` (z. B. "E-Mail vom 20.11.2026").
 
 ## Hinweise

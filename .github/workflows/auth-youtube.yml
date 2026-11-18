@@ -1,8 +1,14 @@
 name: auth-youtube
 # Einmalige Anmeldung des YouTube-Kanals. Von Hand starten, dann im Log den Code ablesen.
-# Der Schluessel landet als Artefakt "youtube-token" (1 Tag gespeichert), nie im Log.
+# Der Schluessel wird mit dem Secret TOKEN_KEY verschluesselt und als youtube-token.enc
+# ins Repository gelegt. Er erscheint nie im Klartext im Log oder als Artefakt.
 on:
   workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: state
+  cancel-in-progress: false
 jobs:
   auth:
     runs-on: ubuntu-latest
@@ -12,13 +18,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: TOKEN_KEY pruefen
+        env:
+          TOKEN_KEY: ${{ secrets.TOKEN_KEY }}
+        run: |
+          if [ "${#TOKEN_KEY}" -lt 24 ]; then
+            echo "::error::Secret TOKEN_KEY fehlt oder ist kuerzer als 24 Zeichen."
+            exit 1
+          fi
       - name: Anmelden
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
-        run: python clipper.py auth-youtube --out youtube-token.txt
-      - uses: actions/upload-artifact@v4
-        with:
-          name: youtube-token
-          path: youtube-token.txt
-          retention-days: 1
+        run: python clipper.py auth-youtube --out "$RUNNER_TEMP/token.txt"
+      - name: Verschluesseln und speichern
+        env:
+          TOKEN_KEY: ${{ secrets.TOKEN_KEY }}
+        run: |
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -in "$RUNNER_TEMP/token.txt" -out youtube-token.enc -pass env:TOKEN_KEY
+          shred -u "$RUNNER_TEMP/token.txt"
+          git config user.name "clipper-bot"
+          git config user.email "clipper-bot@users.noreply.github.com"
+          git add youtube-token.enc
+          git commit -m "auth: YouTube-Anmeldung (verschluesselt)"
+          git pull --rebase && git push
