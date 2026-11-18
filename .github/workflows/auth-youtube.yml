@@ -40,6 +40,7 @@ jobs:
           shred -u "$RUNNER_TEMP/token.txt"
           git config user.name "clipper-bot"
           git config user.email "clipper-bot@users.noreply.github.com"
-          git add youtube-token.enc
+          python clipper.py export
+          git add youtube-token.enc docs/data.json
           git commit -m "auth: YouTube-Anmeldung (verschluesselt)"
           git pull --rebase && git push

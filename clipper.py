@@ -11,6 +11,7 @@ welcher Clip es wert ist und wie er heissen soll:
     clipper.py render <clip_id> --title  9:16-Fassung erzeugen
     clipper.py upload <clip_id> --title  auf YouTube hochladen
     clipper.py publish-queue             Entscheidungen aus queue/ ausfuehren
+    clipper.py export                    docs/data.json fuer die Uebersichtsseite
     clipper.py status                    Uebersicht
     clipper.py auth-youtube              einmalige YouTube-Anmeldung
 
@@ -92,6 +93,9 @@ def db() -> sqlite3.Connection:
             status TEXT DEFAULT 'candidate', youtube_id TEXT,
             uploaded_at TEXT, first_seen TEXT)"""
     )
+    cols = {r[1] for r in con.execute("PRAGMA table_info(clips)")}
+    if "yt_title" not in cols:
+        con.execute("ALTER TABLE clips ADD COLUMN yt_title TEXT")
     return con
 
 
@@ -361,8 +365,8 @@ def cmd_upload(args) -> None:
     result, _ = http(session_url, method="PUT", data=video.read_bytes(),
                      headers={"Authorization": f"Bearer {token}",
                               "Content-Type": "video/mp4", "Content-Length": str(size)})
-    con.execute("UPDATE clips SET status='uploaded', youtube_id=?, uploaded_at=? WHERE id=?",
-                (result["id"], dt.datetime.now(UTC).isoformat(), row["id"]))
+    con.execute("UPDATE clips SET status='uploaded', youtube_id=?, uploaded_at=?, yt_title=? WHERE id=?",
+                (result["id"], dt.datetime.now(UTC).isoformat(), args.title[:100], row["id"]))
     con.commit()
     print(json.dumps({"youtube_id": result["id"], "url": f"https://youtu.be/{result['id']}",
                       "privacy": result.get("status", {}).get("privacyStatus")}))
@@ -414,6 +418,63 @@ def cmd_publish_queue(args) -> None:
         sys.exit(f"{failed} Clip(s) fehlgeschlagen, siehe oben.")
 
 
+def cmd_export(args) -> None:
+    """Schreibt docs/data.json fuer die Uebersichtsseite (nur oeffentliche Angaben, keine Secrets)."""
+    cfg = load_config()
+    con = db()
+    now = dt.datetime.now(UTC)
+    today = now.date()
+    counts = {r["status"]: r["n"] for r in con.execute(
+        "SELECT status, COUNT(*) n FROM clips GROUP BY status")}
+    per_day = {r["d"]: r["n"] for r in con.execute(
+        "SELECT substr(uploaded_at,1,10) d, COUNT(*) n FROM clips "
+        "WHERE uploaded_at IS NOT NULL GROUP BY d")}
+    days = [(today - dt.timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
+    recent = [dict(r) for r in con.execute(
+        "SELECT id, streamer, COALESCE(yt_title, title) AS title, youtube_id, uploaded_at, url "
+        "FROM clips WHERE status='uploaded' ORDER BY uploaded_at DESC LIMIT 12")]
+    candidates = [dict(r) for r in con.execute(
+        "SELECT id, streamer, title, url, views, duration, created_at, score "
+        "FROM clips WHERE status='candidate' ORDER BY score DESC LIMIT 15")]
+    failed = [dict(r) for r in con.execute(
+        "SELECT id, streamer, title, url FROM clips WHERE status='failed' "
+        "ORDER BY first_seen DESC LIMIT 10")]
+    queue = []
+    if QUEUE.exists():
+        for f in sorted(QUEUE.glob("*.json")):
+            try:
+                job = json.loads(f.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                job = {}
+            queue.append({"id": f.stem, "title": job.get("title"), "skip": bool(job.get("skip"))})
+    streamers = [{"login": s.get("login", "").lower(),
+                  "permitted": bool(s.get("permission_proof", "").strip()),
+                  "proof": s.get("permission_proof", "").strip()}
+                 for s in cfg.get("streamer", []) if s.get("login")]
+    up = cfg.get("upload", {})
+    data = {
+        "generated_at": now.isoformat(),
+        "settings": {"privacy": up.get("privacy", "private"),
+                     "max_per_day": up.get("max_per_day", 5),
+                     "language": up.get("language", "en"),
+                     "min_views": cfg.get("scan", {}).get("min_views", 50),
+                     "lookback_hours": cfg.get("scan", {}).get("lookback_hours", 48)},
+        "counts": counts,
+        "today_uploads": per_day.get(today.isoformat(), 0),
+        "uploads_by_day": [{"date": d, "n": per_day.get(d, 0)} for d in days],
+        "recent_uploads": recent,
+        "candidates": candidates,
+        "queue": queue,
+        "failed": failed,
+        "streamers": streamers,
+        "youtube_connected": (ROOT / "youtube-token.enc").exists(),
+    }
+    out = Path(args.out)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(out)
+
+
 def cmd_status(args) -> None:
     con = db()
     counts = {r["status"]: r["n"] for r in con.execute(
@@ -439,6 +500,8 @@ def main() -> None:
     sub.add_parser("status").set_defaults(fn=cmd_status)
     s = sub.add_parser("auth-youtube"); s.add_argument("--out"); s.set_defaults(fn=cmd_auth_youtube)
     sub.add_parser("publish-queue").set_defaults(fn=cmd_publish_queue)
+    s = sub.add_parser("export"); s.add_argument("--out", default=str(ROOT / "docs" / "data.json"))
+    s.set_defaults(fn=cmd_export)
     args = p.parse_args()
     try:
         args.fn(args)

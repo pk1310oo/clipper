@@ -11,6 +11,8 @@ du entscheidest nur, WELCHE Clips veroeffentlicht werden und WIE sie heissen.
 3. Committen und auf `main` pushen. Der Workflow `publish` startet dann von selbst.
 4. Kurzbericht an den Nutzer: was veroeffentlicht, was verworfen, auffaellige Fehler
    (`state.sqlite` per `python clipper.py status` und die letzten Actions-Laeufe).
+   Die Uebersichtsseite (docs/) aktualisieren die Workflows selbst; nach eigenen Aenderungen an
+   queue/ zusaetzlich `python clipper.py export` ausfuehren und docs/data.json mitcommitten.
 
 ## Auswahl
 - Hoechstens 5 Clips pro Tag (Tageslimit im Programm), lieber 3 starke als 5 mittelmaessige.
@@ -24,14 +26,15 @@ du entscheidest nur, WELCHE Clips veroeffentlicht werden und WIE sie heissen.
 - `overlay` ist der Text im Bild: kuerzer, hoechstens ca. 45 Zeichen.
 - Beschreibung und Tags ebenfalls Englisch; die Quellenangabe haengt das Programm selbst an.
 - Kein Clickbait, das der Clip nicht einloest. Keine Beleidigungen ueber Streamer oder Zuschauer.
-- Kein "GTA" als alleiniger Titel; der Spielname darf in Titel und Tags vorkommen.
+- Spiel- oder Kategoriename darf in Titel und Tags vorkommen, aber nie als alleiniger Titel.
 
 ## Erlaubnis-Quellen recherchieren
 Nur grosse, bekannte Streamer (Faustregel: im Schnitt mindestens 10.000 gleichzeitige Zuschauer
 oder ueber 1 Million Follower). Kleine Streamer nicht melden, auch wenn sie Kampagnen anbieten.
 
-Bei jedem Durchgang zusaetzlich pruefen, ob es neue Erlaubnis-Quellen fuer GTA-VI-Streamer gibt:
-- offene Clipping-Kampagnen (z. B. Whop, Kampagnen-Uebersichten wie gtaviclipper.com/board),
+Bei jedem Durchgang zusaetzlich pruefen, ob es neue Erlaubnis-Quellen gibt (beliebige Spiele
+und Kategorien, nicht nur GTA; Twitch-Streamer, da das Programm bisher nur Twitch scannt):
+- offene Clipping-Kampagnen (z. B. Whop Content Rewards und Kampagnen-Uebersichten),
 - oeffentliche, ausdrueckliche Clip-Freigaben von Streamern (Bio, Panels, Posts).
 Gefundenes NUR dem Nutzer melden, mit Link, Rate, Budget und Regeln. Nichts davon selbst
 in `config.toml` eintragen: Den Eintrag macht der Nutzer bzw. erst nach seiner Bestaetigung.

@@ -27,6 +27,7 @@ jobs:
         run: |
           git config user.name "clipper-bot"
           git config user.email "clipper-bot@users.noreply.github.com"
-          for f in candidates.json state.sqlite; do if [ -e "$f" ]; then git add "$f"; fi; done
+          python clipper.py export
+          for f in candidates.json state.sqlite docs/data.json; do if [ -e "$f" ]; then git add "$f"; fi; done
           git diff --cached --quiet || git commit -m "scan: neue Kandidaten"
           git pull --rebase && git push

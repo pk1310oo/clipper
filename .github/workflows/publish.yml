@@ -46,6 +46,7 @@ jobs:
         run: |
           git config user.name "clipper-bot"
           git config user.email "clipper-bot@users.noreply.github.com"
-          git add -A queue; if [ -e state.sqlite ]; then git add state.sqlite; fi
+          python clipper.py export
+          git add -A queue docs/data.json; if [ -e state.sqlite ]; then git add state.sqlite; fi
           git diff --cached --quiet || git commit -m "publish: Warteschlange abgearbeitet"
           git pull --rebase && git push

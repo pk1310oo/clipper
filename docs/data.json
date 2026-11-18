@@ -1,0 +1,82 @@
+{
+ "generated_at": "2026-11-18T08:37:56.226304+00:00",
+ "settings": {
+  "privacy": "private",
+  "max_per_day": 5,
+  "language": "en",
+  "min_views": 1000,
+  "lookback_hours": 48
+ },
+ "counts": {},
+ "today_uploads": 0,
+ "uploads_by_day": [
+  {
+   "date": "2026-11-05",
+   "n": 0
+  },
+  {
+   "date": "2026-11-06",
+   "n": 0
+  },
+  {
+   "date": "2026-11-07",
+   "n": 0
+  },
+  {
+   "date": "2026-11-08",
+   "n": 0
+  },
+  {
+   "date": "2026-11-09",
+   "n": 0
+  },
+  {
+   "date": "2026-11-10",
+   "n": 0
+  },
+  {
+   "date": "2026-11-11",
+   "n": 0
+  },
+  {
+   "date": "2026-11-12",
+   "n": 0
+  },
+  {
+   "date": "2026-11-13",
+   "n": 0
+  },
+  {
+   "date": "2026-11-14",
+   "n": 0
+  },
+  {
+   "date": "2026-11-15",
+   "n": 0
+  },
+  {
+   "date": "2026-11-16",
+   "n": 0
+  },
+  {
+   "date": "2026-11-17",
+   "n": 0
+  },
+  {
+   "date": "2026-11-18",
+   "n": 0
+  }
+ ],
+ "recent_uploads": [],
+ "candidates": [],
+ "queue": [],
+ "failed": [],
+ "streamers": [
+  {
+   "login": "beispielkanal",
+   "permitted": false,
+   "proof": ""
+  }
+ ],
+ "youtube_connected": false
+}

@@ -21,6 +21,11 @@ und laedt sie auf YouTube hoch. Claude waehlt die Clips aus und schreibt die Tit
 3. In `config.toml` je Streamer mit Erlaubnis einen `[[streamer]]`-Block eintragen,
    mit `permission_proof` (z. B. "E-Mail vom 20.11.2026").
 
+## Uebersicht
+Die Seite in `docs/` zeigt alles auf einen Blick (GitHub Pages: Settings > Pages >
+Deploy from a branch > main /docs). Auf dem Mac in Safari oeffnen und ueber
+Ablage > Zum Dock hinzufuegen als eigene App ablegen.
+
 ## Hinweise
 - Uploads sind privat, bis Google das API-Projekt geprueft hat.
 - Ohne `permission_proof` wird ein Streamer nie verarbeitet.
