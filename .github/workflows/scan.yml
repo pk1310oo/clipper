@@ -1,0 +1,32 @@
+name: scan
+# Sucht alle 2 Stunden neue Clips der freigegebenen Streamer und schreibt candidates.json.
+on:
+  schedule:
+    - cron: "17 */2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: state
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Clips suchen
+        env:
+          TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+          TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
+        run: python clipper.py scan --top 25 --out candidates.json
+      - name: Ergebnis speichern
+        run: |
+          git config user.name "clipper-bot"
+          git config user.email "clipper-bot@users.noreply.github.com"
+          for f in candidates.json state.sqlite; do if [ -e "$f" ]; then git add "$f"; fi; done
+          git diff --cached --quiet || git commit -m "scan: neue Kandidaten"
+          git pull --rebase && git push

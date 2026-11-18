@@ -1,0 +1,22 @@
+# Einstellungen. Keine Zugangsdaten hier eintragen, die liegen als GitHub-Secrets.
+
+[scan]
+lookback_hours = 48     # wie weit zurueck nach Clips gesucht wird
+min_views = 50          # Clips darunter werden ignoriert
+min_seconds = 8
+max_seconds = 60
+game_ids = []           # Twitch-Kategorie-IDs, leer = alle Spiele des Streamers
+
+[render]
+max_seconds = 59        # Shorts/Reels-Grenze
+font = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+[upload]
+privacy = "private"     # erst auf "public" stellen, wenn Googles API-Pruefung durch ist
+max_per_day = 5
+language = "de"
+
+# Ein Block pro Streamer. Ohne permission_proof wird der Streamer uebersprungen.
+[[streamer]]
+login = "beispielkanal"
+permission_proof = ""   # z. B. "E-Mail vom 20.11.2026" oder Link zur Clipping-Kampagne
