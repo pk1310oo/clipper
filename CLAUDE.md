@@ -11,8 +11,8 @@ du entscheidest nur, WELCHE Clips veroeffentlicht werden und WIE sie heissen.
 3. Committen und auf `main` pushen. Der Workflow `publish` startet dann von selbst.
 4. Kurzbericht an den Nutzer: was veroeffentlicht, was verworfen, auffaellige Fehler
    (`state.sqlite` per `python clipper.py status` und die letzten Actions-Laeufe).
-   Die Uebersichtsseite (docs/) aktualisieren die Workflows selbst; nach eigenen Aenderungen an
-   queue/ zusaetzlich `python clipper.py export` ausfuehren und docs/data.json mitcommitten.
+   Die Uebersichtsseite (docs/data.json) aktualisieren nur die Workflows; nie selbst committen,
+   sonst entstehen Konflikte mit laufenden Workflows.
 
 ## Auswahl
 - Hoechstens 5 Clips pro Tag (Tageslimit im Programm), lieber 3 starke als 5 mittelmaessige.
