@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-18T08:37:56.226304+00:00",
+ "generated_at": "2026-11-18T08:51:17.265549+00:00",
  "settings": {
   "privacy": "private",
   "max_per_day": 5,
@@ -78,5 +78,5 @@
    "proof": ""
   }
  ],
- "youtube_connected": false
+ "youtube_connected": true
 }
