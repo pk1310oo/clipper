@@ -27,6 +27,9 @@ du entscheidest nur, WELCHE Clips veroeffentlicht werden und WIE sie heissen.
 - Kein "GTA" als alleiniger Titel; der Spielname darf in Titel und Tags vorkommen.
 
 ## Erlaubnis-Quellen recherchieren
+Nur grosse, bekannte Streamer (Faustregel: im Schnitt mindestens 10.000 gleichzeitige Zuschauer
+oder ueber 1 Million Follower). Kleine Streamer nicht melden, auch wenn sie Kampagnen anbieten.
+
 Bei jedem Durchgang zusaetzlich pruefen, ob es neue Erlaubnis-Quellen fuer GTA-VI-Streamer gibt:
 - offene Clipping-Kampagnen (z. B. Whop, Kampagnen-Uebersichten wie gtaviclipper.com/board),
 - oeffentliche, ausdrueckliche Clip-Freigaben von Streamern (Bio, Panels, Posts).

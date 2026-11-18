@@ -2,7 +2,7 @@
 
 [scan]
 lookback_hours = 48     # wie weit zurueck nach Clips gesucht wird
-min_views = 50          # Clips darunter werden ignoriert
+min_views = 1000        # nur Clips, die schon Zugkraft zeigen (grosse Streamer)
 min_seconds = 8
 max_seconds = 60
 game_ids = []           # Twitch-Kategorie-IDs, leer = alle Spiele des Streamers
