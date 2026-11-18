@@ -197,6 +197,7 @@ details.table-view summary { cursor: pointer; color: var(--text-3); }
 .list .main { min-width: 0; flex: 1; }
 .list .title { font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .list .meta { color: var(--text-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#streamers .meta { white-space: normal; }
 .list .side { color: var(--text-3); font-size: 12px; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
 .list .side b { color: var(--text); font-weight: 600; display: block; font-size: 14px; }
 .table-scroll { overflow-x: auto; }
@@ -644,7 +645,7 @@ function renderStreamers(d) {
   hbars($("streamer-bars"), (d.by_streamer || []).map(s => ({ name: s.streamer, v: s.views, sub: `${s.uploads} Clips`, href: `https://twitch.tv/${s.streamer}` })), "Noch keine Aufrufe pro Streamer.");
   const rows = d.streamers || [];
   $("streamers").innerHTML = rows.length ? rows.map(s => {
-    const proof = s.proof && /^https?:\/\//.test(s.proof) ? `<a href="${esc(s.proof)}" target="_blank" rel="noopener">Nachweis öffnen</a>` : esc(s.proof || "kein Nachweis eingetragen");
+    const proof = s.proof && /^https?:\/\//.test(s.proof) ? `<a href="${esc(s.proof)}" target="_blank" rel="noopener">Nachweis öffnen</a>` : esc(s.proof || s.note || "kein Nachweis eingetragen");
     return `<li><div class="main"><div class="title"><a href="https://twitch.tv/${esc(s.login)}" target="_blank" rel="noopener">${esc(s.login)}</a></div><div class="meta">${proof}</div></div>
       ${statusHtml(s.permitted ? "good" : "warning", s.permitted ? "freigegeben" : "gesperrt")}</li>`;
   }).join("") : emptyLi("Noch keine Streamer eingetragen.");
@@ -709,7 +710,7 @@ function renderSettings(d) {
 function renderAlerts(d, states) {
   const a = [];
   if (!d.youtube_connected) a.push(["warning", "YouTube ist noch nicht verbunden.", "Workflow „YouTube-Anmeldung“ starten."]);
-  if (!(d.streamers || []).some(s => s.permitted)) a.push(["warning", "Kein freigegebener Streamer.", "Unter Einstellungen → „Streamer eintragen“ einen Streamer mit Nachweis hinzufügen."]);
+  if (!(d.streamers || []).some(s => s.permitted)) a.push(["warning", "Kein freigegebener Streamer.", (d.streamers || []).length ? "Unter „Streamer“ steht bei jedem, was zum Freischalten fehlt." : "Unter Einstellungen → „Streamer eintragen“ einen Streamer mit Nachweis hinzufügen."]);
   if (states.includes("critical")) a.push(["critical", "Ein Arbeitsschritt ist fehlgeschlagen.", "Unter „Pipeline“ den roten Eintrag öffnen."]);
   if (d.settings.privacy !== "public" && (d.counts || {}).uploaded) a.push(["warning", "Uploads sind privat.", "In YouTube Studio von Hand veröffentlichen, bis Google die App geprüft hat."]);
   $("alerts").innerHTML = a.map(([k, t, s]) => `<div class="alert"><span class="icon" style="background:${STATUS[k].color}">${STATUS[k].icon}</span><div><b>${esc(t)}</b> <span>${esc(s)}</span></div></div>`).join("");

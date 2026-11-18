@@ -499,7 +499,8 @@ def cmd_export(args) -> None:
             queue.append({"id": f.stem, "title": job.get("title"), "skip": bool(job.get("skip"))})
     streamers = [{"login": s.get("login", "").lower(),
                   "permitted": bool(s.get("permission_proof", "").strip()),
-                  "proof": s.get("permission_proof", "").strip()}
+                  "proof": s.get("permission_proof", "").strip(),
+                  "note": s.get("note", "").strip()}
                  for s in cfg.get("streamer", []) if s.get("login")]
     up = cfg.get("upload", {})
     data = {

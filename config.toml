@@ -20,6 +20,19 @@ language = "en"
 rate_per_1000 = 1.0     # Verguetung pro 1.000 Aufrufe (z. B. Kampagnenrate), nur fuer die Schaetzung in der App
 
 # Ein Block pro Streamer. Ohne permission_proof wird der Streamer uebersprungen.
+# Zum Freischalten den Link zur Kampagne oder Freigabe bei permission_proof eintragen.
+
 [[streamer]]
-login = "beispielkanal"
-permission_proof = ""   # Link zur Clipping-Kampagne oder zur oeffentlichen Clip-Freigabe des Streamers
+login = "kaicenat"
+permission_proof = ""
+note = "Kampagne auf Whop Content Rewards beitreten, dann den Kampagnen-Link eintragen."
+
+[[streamer]]
+login = "caseoh_"
+permission_proof = ""
+note = "Kein Programm bekannt: Zusage seines Teams einholen (geschaeftliche E-Mail auf seinem YouTube-Kanal)."
+
+[[streamer]]
+login = "zackrawrr"
+permission_proof = ""
+note = "Asmongold: nur eine alte Aussage von 2020 zu Reupload-Kanaelen, keine aktuelle Freigabe gefunden."
