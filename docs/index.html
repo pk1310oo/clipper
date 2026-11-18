@@ -4,17 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Clipper</title>
-<meta name="description" content="Übersicht der automatischen Clip-Pipeline">
+<meta name="description" content="Steuerzentrale der automatischen Clip-Pipeline">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-512.png">
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f4f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e0e0d" media="(prefers-color-scheme: dark)">
 <style>
 :root {
   color-scheme: light;
   --bg: #f4f4f2;
+  --side: #ecebe7;
   --surface: #fcfcfb;
+  --raised: #ffffff;
   --text: #0b0b0b;
   --text-2: #52514e;
   --text-3: #75746f;
@@ -22,121 +24,171 @@
   --ring: rgba(11,11,11,0.10);
   --accent: #2a78d6;
   --accent-soft: rgba(42,120,214,0.10);
+  --accent-fill-top: rgba(42,120,214,0.22);
+  --accent-fill-bottom: rgba(42,120,214,0);
+  --bar-muted: #d6d5ce;
   --good: #0ca30c;
   --warning: #fab219;
   --serious: #ec835a;
   --critical: #d03b3b;
-  --bar: #2a78d6;
-  --bar-muted: #c9c8c0;
+  --up: #0a8a0a;
+  --down: #c23434;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --bg: #111110;
+    --bg: #0e0e0d;
+    --side: #141413;
     --surface: #1a1a19;
+    --raised: #222220;
     --text: #f0efec;
     --text-2: #c3c2b7;
     --text-3: #93928a;
     --line: #2c2c2a;
-    --ring: rgba(255,255,255,0.10);
+    --ring: rgba(255,255,255,0.08);
     --accent: #3987e5;
     --accent-soft: rgba(57,135,229,0.16);
-    --bar: #3987e5;
-    --bar-muted: #3a3a37;
+    --accent-fill-top: rgba(57,135,229,0.32);
+    --accent-fill-bottom: rgba(57,135,229,0);
+    --bar-muted: #34342f;
+    --up: #3fbf3f;
+    --down: #e66767;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #111110;
+  --bg: #0e0e0d;
+  --side: #141413;
   --surface: #1a1a19;
+  --raised: #222220;
   --text: #f0efec;
   --text-2: #c3c2b7;
   --text-3: #93928a;
   --line: #2c2c2a;
-  --ring: rgba(255,255,255,0.10);
+  --ring: rgba(255,255,255,0.08);
   --accent: #3987e5;
   --accent-soft: rgba(57,135,229,0.16);
-  --bar: #3987e5;
-  --bar-muted: #3a3a37;
+  --accent-fill-top: rgba(57,135,229,0.32);
+  --accent-fill-bottom: rgba(57,135,229,0);
+  --bar-muted: #34342f;
+  --up: #3fbf3f;
+  --down: #e66767;
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; }
+html, body { margin: 0; height: 100%; }
 body {
   background: var(--bg);
   color: var(--text);
-  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+  font: 14px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
-.wrap { max-width: 1180px; margin: 0 auto; padding: 28px 24px 64px; }
+button { font: inherit; color: inherit; }
 
-/* Kopfzeile */
-header { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
-.brand { display: flex; align-items: center; gap: 12px; margin-right: auto; }
-.brand img { width: 36px; height: 36px; border-radius: 9px; }
-.brand h1 { font-size: 22px; font-weight: 650; letter-spacing: -0.01em; margin: 0; }
-.brand small { display: block; color: var(--text-3); font-size: 13px; font-weight: 400; }
+/* App-Rahmen */
+.app { display: grid; grid-template-columns: 232px minmax(0, 1fr); min-height: 100vh; background: linear-gradient(to right, var(--side) 231px, var(--line) 231px, var(--line) 232px, transparent 232px); }
+aside {
+  background: var(--side); border-right: 1px solid var(--line);
+  padding: 20px 14px; display: flex; flex-direction: column; gap: 22px;
+  position: sticky; top: 0; height: 100vh;
+}
+.brand { display: flex; align-items: center; gap: 10px; padding: 0 8px; }
+.brand img { width: 32px; height: 32px; border-radius: 8px; }
+.brand b { font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+nav { display: grid; gap: 2px; }
+nav a {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 9px;
+  color: var(--text-2); font-weight: 520;
+}
+nav a svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+nav a:hover { background: var(--accent-soft); text-decoration: none; color: var(--text); }
+nav a.active { background: var(--raised); color: var(--text); box-shadow: 0 0 0 1px var(--ring); }
+nav a .count { margin-left: auto; font-size: 12px; font-style: normal; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.side-foot { margin-top: auto; display: grid; gap: 8px; padding: 0 4px; justify-items: start; }
+.side-foot small { color: var(--text-3); font-size: 12px; padding: 0 6px; }
+
+main { padding: 26px 32px 64px; min-width: 0; }
+.topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; flex-wrap: wrap; }
+.topbar h1 { font-size: 24px; font-weight: 680; letter-spacing: -0.02em; margin: 0; margin-right: auto; }
 .pill {
   display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px;
   border-radius: 999px; background: var(--surface); box-shadow: 0 0 0 1px var(--ring);
   font-size: 13px; font-weight: 550; white-space: nowrap;
 }
-.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
-button {
-  font: inherit; font-size: 13px; font-weight: 550; color: var(--text);
-  background: var(--surface); border: 0; box-shadow: 0 0 0 1px var(--ring);
-  border-radius: 999px; padding: 6px 14px; cursor: pointer;
+.btn {
+  font-size: 13px; font-weight: 550; background: var(--surface); border: 0;
+  box-shadow: 0 0 0 1px var(--ring); border-radius: 999px; padding: 6px 14px; cursor: pointer;
 }
-button:hover { background: var(--accent-soft); }
+.btn:hover { background: var(--accent-soft); }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; }
 
-/* Hinweisleiste */
-.alerts { display: grid; gap: 8px; margin-bottom: 20px; }
+/* Hinweise */
+.alerts { display: grid; gap: 8px; margin-bottom: 18px; }
 .alert {
-  display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px;
+  display: flex; gap: 10px; align-items: flex-start; padding: 11px 14px;
   background: var(--surface); border-radius: 12px; box-shadow: 0 0 0 1px var(--ring);
-  font-size: 14px;
 }
 .alert .icon { flex: none; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; color: #fff; }
 .alert b { font-weight: 600; }
 .alert span { color: var(--text-2); }
 
+/* Karten */
+.card { background: var(--surface); border-radius: 16px; box-shadow: 0 0 0 1px var(--ring); padding: 18px 20px; min-width: 0; }
+.card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.card-head h2 { font-size: 15px; font-weight: 620; margin: 0; }
+.card-head .hint { color: var(--text-3); font-size: 13px; margin: 0 0 0 auto; }
+.row { display: grid; gap: 16px; margin-bottom: 16px; }
+.row.k4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.row.c21 { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); }
+.row.c11 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
 /* Kennzahlen */
-.tiles { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
-.tile, .card {
-  background: var(--surface); border-radius: 14px; box-shadow: 0 0 0 1px var(--ring);
-}
-.tile { padding: 16px 18px; }
-.tile .label { color: var(--text-2); font-size: 13px; }
-.tile .value { font-size: 28px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.2; margin-top: 4px; font-variant-numeric: tabular-nums; }
-.tile .sub { color: var(--text-3); font-size: 12px; margin-top: 2px; }
-.meter { height: 4px; border-radius: 999px; background: var(--accent-soft); margin-top: 10px; overflow: hidden; }
+.kpi .label { color: var(--text-2); font-size: 13px; }
+.kpi .value { font-size: 32px; font-weight: 680; letter-spacing: -0.03em; line-height: 1.15; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.kpi .foot { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-size: 12px; color: var(--text-3); min-height: 26px; }
+.delta { font-weight: 600; font-variant-numeric: tabular-nums; }
+.delta.up { color: var(--up); }
+.delta.down { color: var(--down); }
+.spark { margin-left: auto; width: 84px; height: 26px; flex: none; }
+.spark path.l { fill: none; stroke: var(--text-3); stroke-width: 1.5; }
+.spark circle { fill: var(--accent); }
+.meter { height: 6px; border-radius: 999px; background: var(--accent-soft); margin-top: 10px; overflow: hidden; }
 .meter i { display: block; height: 100%; border-radius: 999px; background: var(--accent); }
 
-/* Raster */
-.grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; margin-bottom: 16px; }
-.card { padding: 18px 20px; min-width: 0; }
-.card h2 { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
-.card .hint { color: var(--text-3); font-size: 13px; margin: 0 0 14px; }
-.card-head { display: flex; align-items: baseline; gap: 12px; }
-.card-head .hint { margin-left: auto; }
+/* Segmentschalter */
+.seg { display: inline-flex; background: var(--bg); border-radius: 9px; padding: 2px; box-shadow: inset 0 0 0 1px var(--ring); margin-left: auto; }
+.seg button { border: 0; background: transparent; padding: 4px 10px; border-radius: 7px; font-size: 12px; font-weight: 600; color: var(--text-3); cursor: pointer; }
+.seg button.on { background: var(--raised); color: var(--text); box-shadow: 0 0 0 1px var(--ring); }
 
-/* Balkendiagramm */
+/* Diagramme */
 .chart { position: relative; }
-.chart svg { display: block; width: 100%; height: 180px; overflow: visible; }
-.chart .gridline { stroke: var(--line); stroke-width: 1; }
-.chart .axis { fill: var(--text-3); font-size: 11px; }
-.chart .bar { fill: var(--bar); }
-.chart .bar.zero { fill: var(--bar-muted); }
-.chart .hit { fill: transparent; cursor: default; }
-.chart .hit:hover + .bar, .chart .bar.active { opacity: 0.8; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.gridline { stroke: var(--line); stroke-width: 1; }
+.axis { fill: var(--text-3); font-size: 11px; font-variant-numeric: tabular-nums; }
+.line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.cross { stroke: var(--text-3); stroke-width: 1; stroke-dasharray: 3 3; }
+.marker { fill: var(--accent); stroke: var(--surface); stroke-width: 2; }
+.bar { fill: var(--accent); }
+.bar.zero { fill: var(--bar-muted); }
+.bar.dim { opacity: 0.55; }
+.chart-empty { display: grid; place-items: center; min-height: 160px; color: var(--text-3); font-size: 13px; text-align: center; padding: 0 20px; }
 .tooltip {
-  position: absolute; pointer-events: none; background: var(--text); color: var(--surface);
-  font-size: 12px; padding: 6px 9px; border-radius: 8px; white-space: nowrap;
-  transform: translate(-50%, -100%); margin-top: -8px; opacity: 0; transition: opacity .1s;
+  position: fixed; pointer-events: none; z-index: 10; background: var(--text); color: var(--surface);
+  font-size: 12px; padding: 7px 10px; border-radius: 9px; white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 12px)); opacity: 0; transition: opacity .08s;
 }
+.tooltip b { font-weight: 650; }
 details.table-view { margin-top: 10px; font-size: 13px; color: var(--text-2); }
 details.table-view summary { cursor: pointer; color: var(--text-3); }
+
+/* Rangliste mit Balken */
+.hbars { display: grid; gap: 12px; }
+.hbar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+.hbar .name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 550; }
+.hbar .val { font-variant-numeric: tabular-nums; color: var(--text-2); font-size: 13px; }
+.hbar .track { grid-column: 1 / -1; height: 8px; }
+.hbar .track i { display: block; height: 100%; background: var(--accent); border-radius: 0 4px 4px 0; min-width: 2px; }
 
 /* Listen und Tabellen */
 .list { list-style: none; margin: 0; padding: 0; }
@@ -144,109 +196,171 @@ details.table-view summary { cursor: pointer; color: var(--text-3); }
 .list li:first-child { border-top: 0; padding-top: 0; }
 .list .main { min-width: 0; flex: 1; }
 .list .title { font-weight: 550; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.list .meta { color: var(--text-3); font-size: 13px; }
-.list .side { color: var(--text-3); font-size: 13px; white-space: nowrap; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th { text-align: left; font-weight: 500; color: var(--text-3); font-size: 12px; padding: 0 10px 8px 0; border-bottom: 1px solid var(--line); }
-td { padding: 10px 10px 10px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.list .meta { color: var(--text-3); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.list .side { color: var(--text-3); font-size: 12px; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; }
+.list .side b { color: var(--text); font-weight: 600; display: block; font-size: 14px; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-weight: 500; color: var(--text-3); font-size: 12px; padding: 0 12px 8px 0; border-bottom: 1px solid var(--line); white-space: nowrap; user-select: none; }
+th.sort { cursor: pointer; }
+th.sort:hover { color: var(--text); }
+td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
 tr:last-child td { border-bottom: 0; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-td.clip { max-width: 0; width: 55%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.table-scroll { overflow-x: auto; }
-.empty { color: var(--text-3); font-size: 14px; padding: 18px 0 6px; text-align: center; }
+td.clip { max-width: 0; width: 46%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search { width: 240px; max-width: 100%; padding: 6px 12px; border-radius: 999px; border: 0; background: var(--bg); box-shadow: inset 0 0 0 1px var(--ring); color: var(--text); font: inherit; font-size: 13px; margin-left: auto; }
+.search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.empty { color: var(--text-3); padding: 22px 0 8px; text-align: center; }
 .status { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 550; white-space: nowrap; }
-.tag { display: inline-block; font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--text-2); }
-.links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.links a {
-  display: block; padding: 10px 12px; border-radius: 10px; box-shadow: 0 0 0 1px var(--ring);
-  color: var(--text); font-size: 14px; font-weight: 550;
-}
+.links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.links a { display: block; padding: 11px 13px; border-radius: 11px; box-shadow: 0 0 0 1px var(--ring); color: var(--text); font-weight: 550; }
 .links a small { display: block; color: var(--text-3); font-weight: 400; font-size: 12px; }
 .links a:hover { background: var(--accent-soft); text-decoration: none; }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; font-size: 14px; margin: 0; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin: 0; }
 .kv dt { color: var(--text-3); }
 .kv dd { margin: 0; text-align: right; font-weight: 550; }
-footer { color: var(--text-3); font-size: 12px; text-align: center; margin-top: 28px; }
+.view { display: none; }
+.view.on { display: block; }
 
-@media (max-width: 960px) {
-  .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .grid { grid-template-columns: minmax(0, 1fr); }
-  .links { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 1100px) {
+  .row.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .row.c21, .row.c11 { grid-template-columns: minmax(0, 1fr); }
 }
-@media (max-width: 520px) {
-  .wrap { padding: 20px 16px 48px; }
-  .tile .value { font-size: 24px; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); background: none; }
+  aside { position: sticky; z-index: 5; height: auto; flex-direction: row; align-items: center; gap: 8px; padding: 10px 16px; overflow-x: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand { padding: 0; }
+  .brand b, .side-foot, nav a .count { display: none; }
+  nav { display: flex; gap: 2px; }
+  nav a { padding: 7px 9px; }
+  nav a span { display: none; }
+  main { padding: 18px 16px 48px; }
   .links { grid-template-columns: minmax(0, 1fr); }
+  .kpi .value { font-size: 26px; }
+  .search { width: 100%; margin-left: 0; }
 }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <img src="icon.svg" alt="">
-      <div>
-        <h1>Clipper</h1>
-        <small id="updated">Lade Daten …</small>
-      </div>
+<div class="app">
+  <aside>
+    <div class="brand"><img src="icon.svg" alt=""><b>Clipper</b></div>
+    <nav id="nav">
+      <a href="#overview" data-view="overview" title="Übersicht"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Übersicht</span></a>
+      <a href="#clips" data-view="clips" title="Clips"><svg viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 9.5v5l4-2.5z"/></svg><span>Clips</span><em class="count" id="n-clips"></em></a>
+      <a href="#candidates" data-view="candidates" title="Kandidaten"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>Kandidaten</span><em class="count" id="n-cand"></em></a>
+      <a href="#streamers" data-view="streamers" title="Streamer"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="4"/><path d="M2 21c0-3.9 3.1-7 7-7s7 3.1 7 7"/><path d="M16 4.5a4 4 0 0 1 0 7M22 21c0-3-1.8-5.6-4.5-6.6"/></svg><span>Streamer</span><em class="count" id="n-str"></em></a>
+      <a href="#pipeline" data-view="pipeline" title="Pipeline"><svg viewBox="0 0 24 24"><circle cx="5" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="12" r="2.5"/><path d="M7.5 6H12a4 4 0 0 1 4 4M7.5 18H12a4 4 0 0 0 4-4"/></svg><span>Pipeline</span></a>
+      <a href="#settings" data-view="settings" title="Einstellungen"><svg viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg><span>Einstellungen</span></a>
+    </nav>
+    <div class="side-foot">
+      <span class="pill" id="health"><span class="dot" style="background:var(--text-3)"></span>Prüfe …</span>
+      <small id="updated">Lade Daten …</small>
     </div>
-    <span class="pill" id="health"><span class="dot" style="background:var(--text-3)"></span>Prüfe …</span>
-    <button id="reload" type="button">Aktualisieren</button>
-  </header>
+  </aside>
 
-  <div class="alerts" id="alerts"></div>
+  <main>
+    <div class="topbar">
+      <h1 id="view-title">Übersicht</h1>
+      <button class="btn" id="reload" type="button">Aktualisieren</button>
+    </div>
+    <div class="alerts" id="alerts"></div>
 
-  <section class="tiles" id="tiles"></section>
-
-  <div class="grid">
-    <section class="card">
-      <div class="card-head"><h2>Uploads pro Tag</h2><p class="hint">letzte 14 Tage</p></div>
-      <div class="chart" id="chart"></div>
-      <details class="table-view"><summary>Als Tabelle anzeigen</summary><div id="chart-table"></div></details>
+    <section class="view" id="v-overview">
+      <div class="row k4" id="kpis"></div>
+      <div class="row">
+        <div class="card">
+          <div class="card-head">
+            <h2>Aufrufe auf dem Kanal</h2>
+            <div class="seg" id="range"><button data-days="7">7 Tage</button><button data-days="30" class="on">30 Tage</button><button data-days="90">90 Tage</button></div>
+          </div>
+          <div class="chart" id="views-chart"></div>
+          <details class="table-view"><summary>Als Tabelle anzeigen</summary><div id="views-table"></div></details>
+        </div>
+      </div>
+      <div class="row c21">
+        <div class="card">
+          <div class="card-head"><h2>Uploads pro Tag</h2><p class="hint">letzte 14 Tage</p></div>
+          <div class="chart" id="uploads-chart"></div>
+          <details class="table-view"><summary>Als Tabelle anzeigen</summary><div id="uploads-table"></div></details>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Top-Clips</h2><p class="hint">nach Aufrufen</p></div>
+          <div class="hbars" id="top-clips"></div>
+        </div>
+      </div>
+      <div class="row c11">
+        <div class="card">
+          <div class="card-head"><h2>Zuletzt hochgeladen</h2><a class="hint" href="#clips">alle ansehen</a></div>
+          <ul class="list" id="recent"></ul>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Pipeline</h2><a class="hint" href="#pipeline">Details</a></div>
+          <ul class="list" id="pipeline-mini"></ul>
+        </div>
+      </div>
     </section>
-    <section class="card">
-      <div class="card-head"><h2>Pipeline</h2><p class="hint" id="runs-hint">GitHub Actions</p></div>
-      <ul class="list" id="pipeline"></ul>
-    </section>
-  </div>
 
-  <div class="grid">
-    <section class="card">
-      <div class="card-head"><h2>Zuletzt hochgeladen</h2><p class="hint" id="privacy-hint"></p></div>
-      <ul class="list" id="uploads"></ul>
+    <section class="view" id="v-clips">
+      <div class="card">
+        <div class="card-head"><h2>Alle hochgeladenen Clips</h2><input class="search" id="clip-search" type="search" placeholder="Titel oder Streamer suchen"></div>
+        <div class="table-scroll" id="clips-table"></div>
+      </div>
     </section>
-    <section class="card">
-      <div class="card-head"><h2>Warteschlange</h2><p class="hint">von Claude ausgewählt</p></div>
-      <ul class="list" id="queue"></ul>
+
+    <section class="view" id="v-candidates">
+      <div class="row c21">
+        <div class="card">
+          <div class="card-head"><h2>Kandidaten</h2><p class="hint">beste neue Clips nach Aufrufen pro Zeit</p></div>
+          <div class="table-scroll" id="cand-table"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Warteschlange</h2><p class="hint">von Claude ausgewählt</p></div>
+          <ul class="list" id="queue"></ul>
+        </div>
+      </div>
     </section>
-  </div>
 
-  <section class="card" style="margin-bottom:16px">
-    <div class="card-head"><h2>Kandidaten</h2><p class="hint">beste neue Clips nach Aufrufen pro Zeit</p></div>
-    <div class="table-scroll" id="candidates"></div>
-  </section>
-
-  <div class="grid">
-    <section class="card">
-      <div class="card-head"><h2>Streamer und Erlaubnisse</h2><p class="hint">nur freigegebene werden verarbeitet</p></div>
-      <ul class="list" id="streamers"></ul>
+    <section class="view" id="v-streamers">
+      <div class="row c11">
+        <div class="card">
+          <div class="card-head"><h2>Aufrufe nach Streamer</h2><p class="hint">alle Uploads</p></div>
+          <div class="hbars" id="streamer-bars"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Erlaubnisse</h2><p class="hint">nur freigegebene werden verarbeitet</p></div>
+          <ul class="list" id="streamers"></ul>
+        </div>
+      </div>
     </section>
-    <section class="card">
-      <h2>Einstellungen</h2>
-      <p class="hint">aus config.toml</p>
-      <dl class="kv" id="settings"></dl>
+
+    <section class="view" id="v-pipeline">
+      <div class="row c11">
+        <div class="card">
+          <div class="card-head"><h2>Arbeitsschritte</h2><p class="hint" id="runs-hint">GitHub Actions</p></div>
+          <ul class="list" id="pipeline"></ul>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Letzte Läufe</h2><a class="hint" href="https://github.com/pk1310oo/clipper/actions">alle Läufe</a></div>
+          <ul class="list" id="runs"></ul>
+        </div>
+      </div>
     </section>
-  </div>
 
-  <section class="card">
-    <h2>Schnellzugriff</h2>
-    <p class="hint">öffnet GitHub</p>
-    <div class="links" id="links"></div>
-  </section>
-
-  <footer>Daten werden bei jedem Lauf der Pipeline aktualisiert. Diese Seite lädt alle 5 Minuten neu.</footer>
+    <section class="view" id="v-settings">
+      <div class="row c11">
+        <div class="card">
+          <div class="card-head"><h2>Einstellungen</h2><p class="hint">aus config.toml</p></div>
+          <dl class="kv" id="settings"></dl>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2>Schnellzugriff</h2><p class="hint">öffnet GitHub und YouTube</p></div>
+          <div class="links" id="links"></div>
+        </div>
+      </div>
+    </section>
+  </main>
 </div>
-
 <div class="tooltip" id="tooltip"></div>
 
 <script>
@@ -264,6 +378,7 @@ if (IN_APP) {
     window.__TAURI__.opener.openUrl(a.href);
   });
 }
+
 const STATUS = {
   good:     { color: "var(--good)",     icon: "✓", label: "Erfolgreich" },
   warning:  { color: "var(--warning)",  icon: "!", label: "Achtung" },
@@ -272,54 +387,64 @@ const STATUS = {
   running:  { color: "var(--accent)",   icon: "…", label: "Läuft gerade" },
 };
 const WORKFLOWS = [
-  { file: "scan.yml",         name: "Clips suchen",        when: "alle 2 Stunden" },
+  { file: "scan.yml",         name: "Clips suchen",            when: "alle 2 Stunden" },
   { file: "publish.yml",      name: "Schneiden und hochladen", when: "bei neuen Clips in der Warteschlange" },
-  { file: "auth-youtube.yml", name: "YouTube-Anmeldung",   when: "einmalig von Hand" },
+  { file: "stats.yml",        name: "YouTube-Statistiken",     when: "alle 3 Stunden" },
+  { file: "desktop.yml",      name: "Mac-App bauen",           when: "bei Änderungen an der App" },
+  { file: "auth-youtube.yml", name: "YouTube-Anmeldung",       when: "einmalig von Hand" },
 ];
+const TITLES = { overview: "Übersicht", clips: "Clips", candidates: "Kandidaten", streamers: "Streamer", pipeline: "Pipeline", settings: "Einstellungen" };
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const fmtNum = (n) => new Intl.NumberFormat("de-DE", { notation: n >= 10000 ? "compact" : "standard", maximumFractionDigits: 1 }).format(n || 0);
+const nf = new Intl.NumberFormat("de-DE");
+const fmtNum = (n) => (n || 0) >= 10000
+  ? new Intl.NumberFormat("de-DE", { notation: "compact", maximumFractionDigits: 1 }).format(n)
+  : nf.format(Math.round(n || 0));
+const fmtMoney = (n) => new Intl.NumberFormat("de-DE", { style: "currency", currency: "USD", maximumFractionDigits: (n || 0) < 100 ? 2 : 0 }).format(n || 0);
+const fmtDay = (iso, opts = { day: "2-digit", month: "2-digit" }) => new Date(iso + "T12:00:00").toLocaleDateString("de-DE", opts);
 const fmtWhen = (iso) => {
   if (!iso) return "–";
   const d = new Date(iso), diff = (Date.now() - d) / 60000;
   if (diff < 1) return "gerade eben";
   if (diff < 60) return `vor ${Math.round(diff)} Min.`;
   if (diff < 60 * 24) return `vor ${Math.round(diff / 60)} Std.`;
-  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" }) + ", " + d.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  if (diff < 60 * 24 * 7) { const n = Math.round(diff / 1440); return n === 1 ? "vor 1 Tag" : `vor ${n} Tagen`; }
+  return d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "2-digit" });
 };
-const statusHtml = (key, label) => {
-  const s = STATUS[key];
-  return `<span class="status"><span class="dot" style="background:${s.color}"></span>${esc(label || s.label)}</span>`;
-};
-const empty = (text) => `<li class="empty">${esc(text)}</li>`;
+const statusHtml = (key, label) => `<span class="status"><span class="dot" style="background:${STATUS[key].color}"></span>${esc(label || STATUS[key].label)}</span>`;
+const emptyLi = (t) => `<li class="empty">${esc(t)}</li>`;
 
-function nextEditorRun() {
-  // Claude-Redakteur: taeglich 11:41 und 19:41 Uhr (Europe/Berlin). Anzeige in Ortszeit des Macs.
-  const fmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit", hour12: false });
-  const now = new Date();
-  for (let m = 1; m <= 24 * 60; m++) {
-    const t = new Date(now.getTime() + m * 60000);
-    const hm = fmt.format(t);
-    if (hm === "11:41" || hm === "19:41") return t;
-  }
-  return null;
+const tip = $("tooltip");
+function showTip(html, x, y) { tip.innerHTML = html; tip.style.left = x + "px"; tip.style.top = y + "px"; tip.style.opacity = 1; }
+function hideTip() { tip.style.opacity = 0; }
+
+function route() {
+  const v = (location.hash || "#overview").slice(1);
+  const view = TITLES[v] ? v : "overview";
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + view));
+  document.querySelectorAll("#nav a").forEach(a => a.classList.toggle("active", a.dataset.view === view));
+  $("view-title").textContent = TITLES[view];
+  hideTip();
+  if (view === "overview" && DATA) renderOverview(DATA);
 }
+window.addEventListener("hashchange", route);
+
+let DATA = null, RANGE = 30;
+let clipSort = { key: "uploaded_at", dir: -1 }, clipFilter = "";
 
 async function loadData() {
   const res = await fetch(DATA_URL + "?t=" + Date.now(), { cache: "no-store" });
-  if (!res.ok) throw new Error("data.json nicht gefunden");
+  if (!res.ok) throw new Error("data.json nicht erreichbar (HTTP " + res.status + ")");
   return res.json();
 }
-
 async function loadRuns() {
   try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/runs?per_page=30`, { cache: "no-store" });
+    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/runs?per_page=40`, { cache: "no-store" });
     if (!res.ok) return null;
     return (await res.json()).workflow_runs || [];
   } catch { return null; }
 }
-
 function runState(run) {
   if (!run) return "idle";
   if (run.status !== "completed") return "running";
@@ -328,185 +453,295 @@ function runState(run) {
   return "critical";
 }
 
-function renderTiles(d) {
-  const c = d.counts || {};
-  const max = d.settings.max_per_day || 5;
-  const total = c.uploaded || 0;
-  const tiles = [
-    { label: "Heute hochgeladen", value: `${d.today_uploads} / ${max}`, sub: "Tageslimit", meter: d.today_uploads / max },
-    { label: "Uploads gesamt", value: fmtNum(total), sub: "seit Start" },
-    { label: "In der Warteschlange", value: fmtNum((d.queue || []).filter(q => !q.skip).length), sub: "wird gleich verarbeitet" },
-    { label: "Kandidaten", value: fmtNum(c.candidate || 0), sub: "warten auf Auswahl" },
-    { label: "Fehlgeschlagen", value: fmtNum(c.failed || 0), sub: `${fmtNum(c.skipped || 0)} verworfen` },
-  ];
-  $("tiles").innerHTML = tiles.map(t => `
-    <div class="tile">
-      <div class="label">${esc(t.label)}</div>
-      <div class="value">${esc(t.value)}</div>
-      <div class="sub">${esc(t.sub)}</div>
-      ${t.meter !== undefined ? `<div class="meter"><i style="width:${Math.min(100, Math.round(t.meter * 100))}%"></i></div>` : ""}
-    </div>`).join("");
+function niceMax(v) {
+  if (v <= 5) return 5;
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p;
+  return 10 * p;
 }
 
-function renderChart(days) {
-  const W = 640, H = 180, padL = 26, padB = 22, padT = 8;
-  const max = Math.max(5, ...days.map(d => d.n));
-  const step = Math.ceil(max / 4);
-  const top = step * 4;
-  const innerW = W - padL, innerH = H - padB - padT;
-  const slot = innerW / days.length, bw = Math.min(28, slot * 0.6);
-  const y = (v) => padT + innerH - (v / top) * innerH;
-  let svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Uploads pro Tag, letzte 14 Tage">`;
-  for (let v = 0; v <= top; v += step) {
-    svg += `<line class="gridline" x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>`;
-    svg += `<text class="axis" x="${padL - 8}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+// Liniendiagramm mit Flaeche, Fadenkreuz und Tooltip (eine Reihe)
+function lineChart(el, points, { height = 240, label = "Aufrufe" } = {}) {
+  if (points.length < 2) {
+    el.innerHTML = `<div class="chart-empty" style="height:${height}px">Noch keine Verlaufsdaten. Die Kurve entsteht, sobald YouTube-Statistiken für mindestens zwei Tage vorliegen.</div>`;
+    return;
   }
-  days.forEach((d, i) => {
-    const cx = padL + slot * i + slot / 2;
-    const h = Math.max(d.n ? 0 : 2, (d.n / top) * innerH);
-    const x = cx - bw / 2, yy = padT + innerH - h;
-    const r = Math.min(4, h / 2, bw / 2);
-    // nur oben gerundet, unten an der Grundlinie verankert
-    const path = `M${x},${yy + h} V${yy + r} Q${x},${yy} ${x + r},${yy} H${x + bw - r} Q${x + bw},${yy} ${x + bw},${yy + r} V${yy + h} Z`;
-    svg += `<rect class="hit" x="${padL + slot * i}" y="${padT}" width="${slot}" height="${innerH}" data-i="${i}"/>`;
-    svg += `<path class="bar${d.n ? "" : " zero"}" d="${path}" data-i="${i}"/>`;
-    if (i % 2 === (days.length - 1) % 2) {
-      const dt = new Date(d.date + "T12:00:00");
-      svg += `<text class="axis" x="${cx}" y="${H - 4}" text-anchor="middle">${dt.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}</text>`;
-    }
+  const W = Math.max(320, el.clientWidth || 900), H = height, padL = 48, padR = 8, padT = 10, padB = 26;
+  const max = niceMax(Math.max(...points.map(p => p.v)));
+  const iw = W - padL - padR, ih = H - padT - padB;
+  const x = (i) => padL + (i / (points.length - 1)) * iw;
+  const y = (v) => padT + ih - (v / max) * ih;
+  let g = "";
+  for (let k = 0; k <= 4; k++) {
+    const v = (max / 4) * k;
+    g += `<line class="gridline" x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${padL - 8}" y="${y(v) + 4}" text-anchor="end">${fmtNum(v)}</text>`;
+  }
+  const labels = Math.max(2, Math.floor(iw / 70)), every = Math.ceil(points.length / labels);
+  points.forEach((p, i) => {
+    if ((points.length - 1 - i) % every === 0) g += `<text class="axis" x="${x(i)}" y="${H - 6}" text-anchor="middle">${fmtDay(p.d)}</text>`;
   });
-  svg += `</svg>`;
-  $("chart").innerHTML = svg;
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join(" ");
+  const area = `${line} L${x(points.length - 1)},${y(0)} L${x(0)},${y(0)} Z`;
+  const id = "g" + Math.random().toString(36).slice(2, 8);
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="height:${H}px" role="img" aria-label="${esc(label)} im Verlauf">
+    <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent-fill-top)"/><stop offset="1" stop-color="var(--accent-fill-bottom)"/></linearGradient></defs>
+    ${g}<path d="${area}" fill="url(#${id})"/><path class="line" d="${line}"/>
+    <line class="cross" y1="${padT}" y2="${padT + ih}" x1="-99" x2="-99"/>
+    <circle class="marker" r="5" cx="-99" cy="-99"/>
+    <rect class="hit" x="${padL}" y="0" width="${iw}" height="${H}" fill="transparent"/></svg>`;
+  const svg = el.querySelector("svg"), cross = svg.querySelector(".cross"), mk = svg.querySelector(".marker");
+  const hit = svg.querySelector(".hit");
+  hit.addEventListener("mousemove", (e) => {
+    const r = svg.getBoundingClientRect();
+    const sx = (e.clientX - r.left) / r.width * W;
+    const i = Math.max(0, Math.min(points.length - 1, Math.round((sx - padL) / iw * (points.length - 1))));
+    const px = x(i), py = y(points[i].v);
+    cross.setAttribute("x1", px); cross.setAttribute("x2", px);
+    mk.setAttribute("cx", px); mk.setAttribute("cy", py);
+    const prev = i > 0 ? points[i].v - points[i - 1].v : null;
+    showTip(`<b>${nf.format(points[i].v)}</b> ${esc(label)}${prev !== null ? ` · ${prev >= 0 ? "+" : ""}${nf.format(prev)} zum Vortag` : ""}<br>${fmtDay(points[i].d, { weekday: "short", day: "2-digit", month: "2-digit" })}`,
+      r.left + px / W * r.width, r.top + py / H * r.height);
+  });
+  hit.addEventListener("mouseleave", () => { hideTip(); cross.setAttribute("x1", -99); cross.setAttribute("x2", -99); mk.setAttribute("cx", -99); });
+}
 
-  const tip = $("tooltip");
-  $("chart").querySelectorAll(".hit").forEach(el => {
-    el.addEventListener("mousemove", (e) => {
-      const d = days[+el.dataset.i];
-      const dt = new Date(d.date + "T12:00:00");
-      tip.innerHTML = `<b>${d.n}</b> ${d.n === 1 ? "Upload" : "Uploads"} · ${dt.toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" })}`;
-      tip.style.left = e.pageX + "px"; tip.style.top = e.pageY + "px"; tip.style.opacity = 1;
-      $("chart").querySelectorAll(".bar").forEach(b => b.classList.toggle("active", b.dataset.i === el.dataset.i));
-    });
-    el.addEventListener("mouseleave", () => {
-      tip.style.opacity = 0;
-      $("chart").querySelectorAll(".bar").forEach(b => b.classList.remove("active"));
-    });
+// Saeulendiagramm (eine Reihe), oben gerundet, unten an der Grundlinie
+function barChart(el, items, { height = 200, unit = ["Upload", "Uploads"] } = {}) {
+  const W = Math.max(300, el.clientWidth || 640), H = height, padL = 30, padB = 24, padT = 8;
+  const max = niceMax(Math.max(1, ...items.map(d => d.n)));
+  const step = max / 4, iw = W - padL, ih = H - padB - padT;
+  const slot = iw / items.length, bw = Math.min(22, slot * 0.5);
+  const y = (v) => padT + ih - (v / max) * ih;
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="height:${H}px" role="img" aria-label="${unit[1]} pro Tag">`;
+  for (let k = 0; k <= 4; k++) { const v = step * k; s += `<line class="gridline" x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/><text class="axis" x="${padL - 8}" y="${y(v) + 4}" text-anchor="end">${fmtNum(v)}</text>`; }
+  const labelEvery = slot < 34 ? 2 : 1;
+  items.forEach((d, i) => {
+    const cx = padL + slot * i + slot / 2, h = d.n ? Math.max(2, (d.n / max) * ih) : 2;
+    const x0 = cx - bw / 2, y0 = padT + ih - h, r = Math.min(4, h / 2, bw / 2);
+    s += `<path class="bar${d.n ? "" : " zero"}" data-i="${i}" d="M${x0},${y0 + h} V${y0 + r} Q${x0},${y0} ${x0 + r},${y0} H${x0 + bw - r} Q${x0 + bw},${y0} ${x0 + bw},${y0 + r} V${y0 + h} Z"/>`;
+    s += `<rect class="hit" data-i="${i}" x="${padL + slot * i}" y="${padT}" width="${slot}" height="${ih}" fill="transparent"/>`;
+    if ((items.length - 1 - i) % labelEvery === 0) s += `<text class="axis" x="${cx}" y="${H - 6}" text-anchor="middle">${fmtDay(d.date)}</text>`;
   });
-  $("chart-table").innerHTML = `<table><thead><tr><th>Tag</th><th class="num">Uploads</th></tr></thead><tbody>${
-    days.map(d => `<tr><td>${new Date(d.date + "T12:00:00").toLocaleDateString("de-DE", { weekday: "short", day: "2-digit", month: "2-digit" })}</td><td class="num">${d.n}</td></tr>`).join("")
+  el.innerHTML = s + "</svg>";
+  const bars = el.querySelectorAll(".bar");
+  el.querySelectorAll(".hit").forEach(h => {
+    h.addEventListener("mousemove", (e) => {
+      const d = items[+h.dataset.i];
+      bars.forEach(b => b.classList.toggle("dim", b.dataset.i !== h.dataset.i));
+      showTip(`<b>${d.n}</b> ${d.n === 1 ? unit[0] : unit[1]} · ${fmtDay(d.date, { weekday: "short", day: "2-digit", month: "2-digit" })}`, e.clientX, e.clientY);
+    });
+    h.addEventListener("mouseleave", () => { hideTip(); bars.forEach(b => b.classList.remove("dim")); });
+  });
+}
+
+// Rangliste mit horizontalen Balken
+function hbars(el, rows, emptyText) {
+  if (!rows.length || !rows.some(r => r.v > 0)) { el.innerHTML = `<div class="chart-empty">${esc(emptyText)}</div>`; return; }
+  const max = Math.max(...rows.map(r => r.v));
+  el.innerHTML = rows.map(r => `<div class="hbar" title="${esc(r.name)}">
+    <div class="name">${r.href ? `<a href="${esc(r.href)}" target="_blank" rel="noopener">${esc(r.name)}</a>` : esc(r.name)}</div>
+    <div class="val">${nf.format(r.v)}${r.sub ? ` <span style="color:var(--text-3)">· ${esc(r.sub)}</span>` : ""}</div>
+    <div class="track"><i style="width:${(r.v / max * 100).toFixed(1)}%"></i></div></div>`).join("");
+}
+
+function sparkline(values) {
+  if (values.length < 2) return "";
+  const W = 84, H = 26, max = Math.max(...values), min = Math.min(...values), span = max - min || 1;
+  const pts = values.map((v, i) => [i / (values.length - 1) * (W - 6) + 3, H - 4 - (v - min) / span * (H - 8)]);
+  const last = pts[pts.length - 1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path class="l" d="${pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ")}"/><circle r="2.5" cx="${last[0]}" cy="${last[1]}"/></svg>`;
+}
+
+function deltaHtml(now, before, suffix) {
+  if (before === undefined || before === null) return "";
+  const d = now - before;
+  if (!d) return `<span class="delta">±0</span>&nbsp;${suffix}`;
+  return `<span class="delta ${d > 0 ? "up" : "down"}">${d > 0 ? "▲ +" : "▼ "}${fmtNum(Math.abs(d))}</span>&nbsp;${suffix}`;
+}
+
+function renderKpis(d) {
+  const t = d.totals || {}, daily = d.channel_daily || [];
+  const ref = daily.length > 7 ? daily[daily.length - 8] : (daily.length > 1 ? daily[0] : null);
+  const max = d.settings.max_per_day || 5;
+  const kpis = [
+    { label: "Aufrufe gesamt", value: fmtNum(t.views || 0), foot: deltaHtml(t.views || 0, ref && ref.views, "in 7 Tagen"), spark: sparkline(daily.slice(-14).map(x => x.views)) },
+    { label: "Abonnenten", value: fmtNum(t.subscribers || 0), foot: deltaHtml(t.subscribers || 0, ref && ref.subscribers, "in 7 Tagen"), spark: sparkline(daily.slice(-14).map(x => x.subscribers)) },
+    { label: "Geschätzter Verdienst", value: fmtMoney(t.est_earnings || 0), foot: `bei ${fmtMoney(t.rate_per_1000 || 0)} pro 1.000 Aufrufe` },
+    { label: "Heute hochgeladen", value: `${d.today_uploads} / ${max}`, foot: `${fmtNum((d.counts || {}).uploaded || 0)} Clips insgesamt`, meter: d.today_uploads / max },
+  ];
+  $("kpis").innerHTML = kpis.map(k => `<div class="card kpi">
+    <div class="label">${esc(k.label)}</div>
+    <div class="value">${esc(k.value)}</div>
+    ${k.meter !== undefined ? `<div class="meter"><i style="width:${Math.min(100, Math.round(k.meter * 100))}%"></i></div>` : ""}
+    <div class="foot">${k.foot || ""}${k.spark || ""}</div></div>`).join("");
+}
+
+function renderViewsChart() {
+  const daily = (DATA.channel_daily || []).slice(-RANGE);
+  lineChart($("views-chart"), daily.map(x => ({ d: x.date, v: x.views })), { label: "Aufrufe" });
+  $("views-table").innerHTML = daily.length ? `<table><thead><tr><th>Tag</th><th class="num">Aufrufe gesamt</th><th class="num">Abonnenten</th></tr></thead><tbody>${
+    daily.slice().reverse().map(x => `<tr><td>${fmtDay(x.date, { weekday: "short", day: "2-digit", month: "2-digit" })}</td><td class="num">${nf.format(x.views)}</td><td class="num">${nf.format(x.subscribers)}</td></tr>`).join("")}</tbody></table>` : "Keine Daten.";
+}
+
+function renderOverview(d) {
+  if (!$("v-overview").classList.contains("on")) return;
+  renderKpis(d);
+  renderViewsChart();
+  const days = d.uploads_by_day || [];
+  barChart($("uploads-chart"), days);
+  $("uploads-table").innerHTML = `<table><thead><tr><th>Tag</th><th class="num">Uploads</th></tr></thead><tbody>${
+    days.map(x => `<tr><td>${fmtDay(x.date, { weekday: "short", day: "2-digit", month: "2-digit" })}</td><td class="num">${x.n}</td></tr>`).join("")}</tbody></table>`;
+  const top = (d.uploads || []).slice().sort((a, b) => b.views - a.views).slice(0, 6);
+  hbars($("top-clips"), top.map(u => ({ name: u.title, v: u.views, href: `https://youtu.be/${u.youtube_id}` })), "Noch keine Aufrufe. Hier erscheinen die erfolgreichsten Clips.");
+  const recent = d.recent_uploads || [];
+  $("recent").innerHTML = recent.length ? recent.slice(0, 6).map(u => `<li><div class="main">
+      <div class="title"><a href="https://youtu.be/${esc(u.youtube_id)}" target="_blank" rel="noopener">${esc(u.title)}</a></div>
+      <div class="meta">${esc(u.streamer)} · ${fmtWhen(u.uploaded_at)}</div></div>
+      <div class="side"><b>${fmtNum(u.views || 0)}</b>Aufrufe</div></li>`).join("") : emptyLi("Noch nichts hochgeladen.");
+}
+
+function renderClips(d) {
+  if (!(d.uploads || []).length) { $("clips-table").innerHTML = `<p class="empty">Noch keine Clips hochgeladen.</p>`; return; }
+  let rows = d.uploads.map(u => ({ ...u, rate: u.views ? u.likes / u.views : 0 }));
+  if (clipFilter) {
+    const q = clipFilter.toLowerCase();
+    rows = rows.filter(u => (u.title || "").toLowerCase().includes(q) || (u.streamer || "").toLowerCase().includes(q));
+  }
+  const k = clipSort.key, dir = clipSort.dir;
+  rows.sort((a, b) => (a[k] > b[k] ? 1 : a[k] < b[k] ? -1 : 0) * dir);
+  const cols = [["title", "Clip", ""], ["streamer", "Streamer", ""], ["views", "Aufrufe", "num"], ["likes", "Likes", "num"], ["comments", "Kommentare", "num"], ["rate", "Like-Rate", "num"], ["uploaded_at", "Hochgeladen", "num"]];
+  $("clips-table").innerHTML = `<table><thead><tr>${cols.map(([key, label, cls]) =>
+      `<th class="sort ${cls}" data-key="${key}">${label}${clipSort.key === key ? (clipSort.dir > 0 ? " ↑" : " ↓") : ""}</th>`).join("")}</tr></thead><tbody>${
+    rows.length ? rows.map(u => `<tr>
+      <td class="clip"><a href="https://youtu.be/${esc(u.youtube_id)}" target="_blank" rel="noopener">${esc(u.title)}</a></td>
+      <td>${esc(u.streamer)}</td>
+      <td class="num">${nf.format(u.views)}</td>
+      <td class="num">${nf.format(u.likes)}</td>
+      <td class="num">${nf.format(u.comments)}</td>
+      <td class="num">${u.views ? (u.rate * 100).toFixed(1).replace(".", ",") + " %" : "–"}</td>
+      <td class="num">${fmtWhen(u.uploaded_at)}</td></tr>`).join("") : `<tr><td colspan="7" class="empty">Keine Treffer.</td></tr>`
   }</tbody></table>`;
+  $("clips-table").querySelectorAll("th.sort").forEach(th => th.addEventListener("click", () => {
+    const key = th.dataset.key;
+    clipSort = clipSort.key === key ? { key, dir: -clipSort.dir } : { key, dir: ["title", "streamer"].includes(key) ? 1 : -1 };
+    renderClips(DATA);
+  }));
+}
+
+function renderCandidates(d) {
+  const rows = d.candidates || [];
+  $("cand-table").innerHTML = rows.length ? `<table><thead><tr><th>Clip</th><th>Streamer</th><th class="num">Aufrufe</th><th class="num">Länge</th><th class="num">Alter</th></tr></thead><tbody>${
+    rows.map(c => `<tr><td class="clip"><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a></td><td>${esc(c.streamer)}</td>
+      <td class="num">${fmtNum(c.views)}</td><td class="num">${Math.round(c.duration)} s</td><td class="num">${fmtWhen(c.created_at)}</td></tr>`).join("")}</tbody></table>`
+    : `<p class="empty">Keine Kandidaten. Sobald freigegebene Streamer live sind, erscheinen hier ihre besten Clips.</p>`;
+  const q = d.queue || [];
+  $("queue").innerHTML = q.length ? q.map(x => `<li><div class="main"><div class="title">${esc(x.skip ? "Verworfen" : x.title)}</div><div class="meta">${esc(x.id)}</div></div>
+    ${statusHtml(x.skip ? "idle" : "running", x.skip ? "wird übersprungen" : "wartet")}</li>`).join("") : emptyLi("Leer. Claude wählt beim nächsten Lauf aus.");
+}
+
+function renderStreamers(d) {
+  hbars($("streamer-bars"), (d.by_streamer || []).map(s => ({ name: s.streamer, v: s.views, sub: `${s.uploads} Clips`, href: `https://twitch.tv/${s.streamer}` })), "Noch keine Aufrufe pro Streamer.");
+  const rows = d.streamers || [];
+  $("streamers").innerHTML = rows.length ? rows.map(s => {
+    const proof = s.proof && /^https?:\/\//.test(s.proof) ? `<a href="${esc(s.proof)}" target="_blank" rel="noopener">Nachweis öffnen</a>` : esc(s.proof || "kein Nachweis eingetragen");
+    return `<li><div class="main"><div class="title"><a href="https://twitch.tv/${esc(s.login)}" target="_blank" rel="noopener">${esc(s.login)}</a></div><div class="meta">${proof}</div></div>
+      ${statusHtml(s.permitted ? "good" : "warning", s.permitted ? "freigegeben" : "gesperrt")}</li>`;
+  }).join("") : emptyLi("Noch keine Streamer eingetragen.");
+}
+
+function nextEditorRun() {
+  const fmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit", hour12: false });
+  const now = new Date();
+  for (let m = 1; m <= 24 * 60; m++) {
+    const t = new Date(now.getTime() + m * 60000), hm = fmt.format(t);
+    if (hm === "11:41" || hm === "19:41") return t;
+  }
+  return null;
 }
 
 function renderPipeline(runs) {
   const items = WORKFLOWS.map(w => {
     const run = runs ? runs.find(r => (r.path || "").endsWith(w.file)) : null;
     const state = runs ? runState(run) : "idle";
-    const label = runs ? (run ? `${STATUS[state].label} · ${fmtWhen(run.updated_at)}` : STATUS.idle.label) : "Status nicht abrufbar";
+    const label = runs ? (run ? `${STATUS[state].label} · ${fmtWhen(run.updated_at)}` : STATUS.idle.label) : "nicht abrufbar";
     const href = run ? run.html_url : `${GH}/actions/workflows/${w.file}`;
     return { state, html: `<li><div class="main"><div class="title"><a href="${href}" target="_blank" rel="noopener">${esc(w.name)}</a></div><div class="meta">${esc(w.when)}</div></div>${statusHtml(state, label)}</li>` };
   });
   const next = nextEditorRun();
-  items.push({ state: "good", html: `<li><div class="main"><div class="title">Claude-Redakteur</div><div class="meta">wählt Clips aus, täglich 11:41 und 19:41 Uhr</div></div><span class="side">nächster Lauf ${next ? next.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr" : "–"}</span></li>` });
-  $("pipeline").innerHTML = items.map(i => i.html).join("");
-  $("runs-hint").textContent = runs ? "GitHub Actions" : "nur bei öffentlichem Repository";
-  return items.map(i => i.state);
-}
-
-function renderUploads(d) {
-  const priv = d.settings.privacy !== "public";
-  $("privacy-hint").textContent = priv ? "Videos sind privat" : "Videos sind öffentlich";
-  const rows = d.recent_uploads || [];
-  $("uploads").innerHTML = rows.length ? rows.map(u => `
-    <li><div class="main">
-      <div class="title"><a href="https://youtu.be/${esc(u.youtube_id)}" target="_blank" rel="noopener">${esc(u.title)}</a></div>
-      <div class="meta">${esc(u.streamer)} · <a href="${esc(u.url)}" target="_blank" rel="noopener">Original</a></div>
-    </div><span class="side">${fmtWhen(u.uploaded_at)}</span></li>`).join("")
-    : empty("Noch nichts hochgeladen.");
-}
-
-function renderQueue(d) {
-  const rows = d.queue || [];
-  $("queue").innerHTML = rows.length ? rows.map(q => `
-    <li><div class="main"><div class="title">${esc(q.skip ? "Verworfen" : q.title)}</div><div class="meta">${esc(q.id)}</div></div>
-    ${statusHtml(q.skip ? "idle" : "running", q.skip ? "wird übersprungen" : "wartet")}</li>`).join("")
-    : empty("Leer. Claude wählt beim nächsten Lauf aus.");
-}
-
-function renderCandidates(d) {
-  const rows = d.candidates || [];
-  if (!rows.length) { $("candidates").innerHTML = `<p class="empty">Keine Kandidaten. Sobald freigegebene Streamer live sind, erscheinen hier ihre besten Clips.</p>`; return; }
-  $("candidates").innerHTML = `<table><thead><tr><th>Clip</th><th>Streamer</th><th class="num">Aufrufe</th><th class="num">Länge</th><th class="num">Score</th><th class="num">Alter</th></tr></thead><tbody>${
-    rows.map(c => `<tr>
-      <td class="clip"><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a></td>
-      <td>${esc(c.streamer)}</td>
-      <td class="num">${fmtNum(c.views)}</td>
-      <td class="num">${Math.round(c.duration)} s</td>
-      <td class="num">${fmtNum(c.score)}</td>
-      <td class="num">${fmtWhen(c.created_at)}</td></tr>`).join("")
-  }</tbody></table>`;
-}
-
-function renderStreamers(d) {
-  const rows = d.streamers || [];
-  $("streamers").innerHTML = rows.length ? rows.map(s => {
-    const proof = s.proof && /^https?:\/\//.test(s.proof) ? `<a href="${esc(s.proof)}" target="_blank" rel="noopener">Nachweis</a>` : esc(s.proof || "kein Nachweis eingetragen");
-    return `<li><div class="main"><div class="title"><a href="https://twitch.tv/${esc(s.login)}" target="_blank" rel="noopener">${esc(s.login)}</a></div><div class="meta">${proof}</div></div>
-      ${statusHtml(s.permitted ? "good" : "warning", s.permitted ? "freigegeben" : "gesperrt")}</li>`;
-  }).join("") : empty("Noch keine Streamer eingetragen.");
+  const editor = `<li><div class="main"><div class="title">Claude-Redakteur</div><div class="meta">wählt Clips aus, täglich 11:41 und 19:41 Uhr</div></div><div class="side">nächster Lauf<b>${next ? next.toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }) + " Uhr" : "–"}</b></div></li>`;
+  $("pipeline").innerHTML = items.map(i => i.html).join("") + editor;
+  $("pipeline-mini").innerHTML = items.slice(0, 3).map(i => i.html).join("") + editor;
+  $("runs-hint").textContent = runs ? "GitHub Actions" : "Status nicht abrufbar";
+  $("runs").innerHTML = runs && runs.length ? runs.slice(0, 12).map(r => {
+    const st = runState(r), secs = (new Date(r.updated_at) - new Date(r.run_started_at || r.created_at)) / 1000;
+    const dur = secs >= 60 ? `${Math.round(secs / 60)} Min.` : `${Math.max(1, Math.round(secs))} s`;
+    return `<li><div class="main"><div class="title"><a href="${esc(r.html_url)}" target="_blank" rel="noopener">${esc(r.name)}</a></div><div class="meta">${esc(r.display_title)}</div></div>
+      <div class="side">${statusHtml(st)}<br>${fmtWhen(r.created_at)} · ${dur}</div></li>`;
+  }).join("") : emptyLi(runs ? "Noch keine Läufe." : "Läufe sind nicht abrufbar.");
+  // fuer den Gesamtstatus zaehlen nur die automatischen Schritte (suchen, hochladen, Statistik)
+  return items.slice(0, 3).map(i => i.state);
 }
 
 function renderSettings(d) {
-  const s = d.settings;
+  const s = d.settings, t = d.totals || {};
   const kv = [
     ["Sichtbarkeit der Uploads", s.privacy === "public" ? "öffentlich" : "privat"],
     ["Uploads pro Tag", s.max_per_day],
-    ["Sprache", s.language === "en" ? "Englisch" : s.language],
+    ["Sprache des Kanals", s.language === "en" ? "Englisch" : s.language],
     ["Mindestaufrufe pro Clip", fmtNum(s.min_views)],
     ["Suchzeitraum", `${s.lookback_hours} Std.`],
+    ["Rate für die Verdienst-Schätzung", `${fmtMoney(t.rate_per_1000 || 0)} pro 1.000`],
     ["YouTube verbunden", d.youtube_connected ? "ja" : "nein"],
   ];
   $("settings").innerHTML = kv.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
-}
-
-function renderLinks() {
   const links = [
     ["Clips jetzt suchen", "scan von Hand starten", `${GH}/actions/workflows/scan.yml`],
     ["Warteschlange abarbeiten", "publish von Hand starten", `${GH}/actions/workflows/publish.yml`],
+    ["Statistiken holen", "stats von Hand starten", `${GH}/actions/workflows/stats.yml`],
     ["Streamer eintragen", "config.toml bearbeiten", `${GH}/edit/main/config.toml`],
     ["Secrets", "Zugangsdaten verwalten", `${GH}/settings/secrets/actions`],
     ["YouTube Studio", "Videos und Statistiken", "https://studio.youtube.com"],
-    ["Alle Läufe", "Protokolle ansehen", `${GH}/actions`],
   ];
-  $("links").innerHTML = links.map(([t, s, h]) => `<a href="${h}" target="_blank" rel="noopener">${esc(t)}<small>${esc(s)}</small></a>`).join("");
+  $("links").innerHTML = links.map(([a, b, h]) => `<a href="${h}" target="_blank" rel="noopener">${esc(a)}<small>${esc(b)}</small></a>`).join("");
 }
 
 function renderAlerts(d, states) {
   const a = [];
   if (!d.youtube_connected) a.push(["warning", "YouTube ist noch nicht verbunden.", "Workflow „YouTube-Anmeldung“ starten."]);
-  if (!(d.streamers || []).some(s => s.permitted)) a.push(["warning", "Kein freigegebener Streamer.", "In config.toml einen Streamer mit Nachweis eintragen."]);
-  if (states.includes("critical")) a.push(["critical", "Ein Workflow ist fehlgeschlagen.", "Unter „Pipeline“ den roten Eintrag öffnen."]);
+  if (!(d.streamers || []).some(s => s.permitted)) a.push(["warning", "Kein freigegebener Streamer.", "Unter Einstellungen → „Streamer eintragen“ einen Streamer mit Nachweis hinzufügen."]);
+  if (states.includes("critical")) a.push(["critical", "Ein Arbeitsschritt ist fehlgeschlagen.", "Unter „Pipeline“ den roten Eintrag öffnen."]);
   if (d.settings.privacy !== "public" && (d.counts || {}).uploaded) a.push(["warning", "Uploads sind privat.", "In YouTube Studio von Hand veröffentlichen, bis Google die App geprüft hat."]);
   $("alerts").innerHTML = a.map(([k, t, s]) => `<div class="alert"><span class="icon" style="background:${STATUS[k].color}">${STATUS[k].icon}</span><div><b>${esc(t)}</b> <span>${esc(s)}</span></div></div>`).join("");
   const worst = states.includes("critical") ? "critical" : a.length ? "warning" : "good";
-  const label = worst === "good" ? "Alles läuft" : worst === "critical" ? "Fehler" : "Einrichtung offen";
-  $("health").innerHTML = `<span class="dot" style="background:${STATUS[worst].color}"></span>${label}`;
+  $("health").innerHTML = `<span class="dot" style="background:${STATUS[worst].color}"></span>${worst === "good" ? "Alles läuft" : worst === "critical" ? "Fehler" : "Einrichtung offen"}`;
 }
 
 async function refresh() {
   try {
     const [d, runs] = await Promise.all([loadData(), loadRuns()]);
-    renderTiles(d);
-    renderChart(d.uploads_by_day || []);
-    const states = renderPipeline(runs);
-    renderUploads(d); renderQueue(d); renderCandidates(d); renderStreamers(d); renderSettings(d); renderLinks();
-    renderAlerts(d, states);
+    DATA = d;
+    renderOverview(d); renderClips(d); renderCandidates(d); renderStreamers(d); renderSettings(d);
+    renderAlerts(d, renderPipeline(runs));
+    $("n-clips").textContent = (d.counts || {}).uploaded || "";
+    $("n-cand").textContent = (d.candidates || []).length || "";
+    $("n-str").textContent = (d.streamers || []).filter(s => s.permitted).length || "";
     $("updated").textContent = "Stand " + fmtWhen(d.generated_at);
   } catch (e) {
     $("updated").textContent = "Daten nicht erreichbar";
     $("alerts").innerHTML = `<div class="alert"><span class="icon" style="background:var(--critical)">×</span><div><b>Keine Daten.</b> <span>${esc(e.message)}</span></div></div>`;
   }
 }
+
+$("range").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  RANGE = +b.dataset.days;
+  $("range").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  if (DATA) renderViewsChart();
+});
+$("clip-search").addEventListener("input", (e) => { clipFilter = e.target.value.trim(); if (DATA) renderClips(DATA); });
 $("reload").addEventListener("click", refresh);
+let resizeT; window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => DATA && renderOverview(DATA), 150); });
+route();
 refresh();
 setInterval(refresh, 5 * 60 * 1000);
 </script>

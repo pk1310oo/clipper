@@ -11,6 +11,7 @@ welcher Clip es wert ist und wie er heissen soll:
     clipper.py render <clip_id> --title  9:16-Fassung erzeugen
     clipper.py upload <clip_id> --title  auf YouTube hochladen
     clipper.py publish-queue             Entscheidungen aus queue/ ausfuehren
+    clipper.py stats                     YouTube-Aufrufe und Abonnenten abrufen
     clipper.py export                    docs/data.json fuer die Uebersichtsseite
     clipper.py status                    Uebersicht
     clipper.py auth-youtube              einmalige YouTube-Anmeldung
@@ -94,8 +95,14 @@ def db() -> sqlite3.Connection:
             uploaded_at TEXT, first_seen TEXT)"""
     )
     cols = {r[1] for r in con.execute("PRAGMA table_info(clips)")}
-    if "yt_title" not in cols:
-        con.execute("ALTER TABLE clips ADD COLUMN yt_title TEXT")
+    for col, typ in [("yt_title", "TEXT"), ("yt_views", "INTEGER"), ("yt_likes", "INTEGER"),
+                     ("yt_comments", "INTEGER"), ("stats_at", "TEXT")]:
+        if col not in cols:
+            con.execute(f"ALTER TABLE clips ADD COLUMN {col} {typ}")
+    con.execute(
+        """CREATE TABLE IF NOT EXISTS channel_daily (
+            date TEXT PRIMARY KEY, views INTEGER, likes INTEGER,
+            subscribers INTEGER, videos INTEGER)""")
     return con
 
 
@@ -380,6 +387,39 @@ def cmd_skip(args) -> None:
     con.commit()
 
 
+def cmd_stats(args) -> None:
+    """Holt Aufrufe, Likes und Kommentare der hochgeladenen Videos und die Abonnenten des Kanals."""
+    con = db()
+    ids = [r["youtube_id"] for r in con.execute(
+        "SELECT youtube_id FROM clips WHERE youtube_id IS NOT NULL")]
+    token = youtube_access_token()
+    auth = {"Authorization": f"Bearer {token}"}
+    now = dt.datetime.now(UTC).isoformat()
+    for i in range(0, len(ids), 50):
+        chunk = ids[i:i + 50]
+        body, _ = http("https://www.googleapis.com/youtube/v3/videos?part=statistics&id="
+                       + ",".join(chunk), headers=auth)
+        for item in body.get("items", []):
+            st = item.get("statistics", {})
+            con.execute(
+                "UPDATE clips SET yt_views=?, yt_likes=?, yt_comments=?, stats_at=? WHERE youtube_id=?",
+                (int(st.get("viewCount", 0)), int(st.get("likeCount", 0)),
+                 int(st.get("commentCount", 0)), now, item["id"]))
+    body, _ = http("https://www.googleapis.com/youtube/v3/channels?part=statistics&mine=true",
+                   headers=auth)
+    ch = (body.get("items") or [{}])[0].get("statistics", {})
+    tot = con.execute("SELECT COALESCE(SUM(yt_views),0), COALESCE(SUM(yt_likes),0) FROM clips").fetchone()
+    con.execute(
+        "INSERT INTO channel_daily (date, views, likes, subscribers, videos) VALUES (?,?,?,?,?) "
+        "ON CONFLICT(date) DO UPDATE SET views=excluded.views, likes=excluded.likes, "
+        "subscribers=excluded.subscribers, videos=excluded.videos",
+        (dt.datetime.now(UTC).date().isoformat(), int(ch.get("viewCount", tot[0])), tot[1],
+         int(ch.get("subscriberCount", 0)), int(ch.get("videoCount", len(ids)))))
+    con.commit()
+    print(json.dumps({"videos": len(ids), "views": int(ch.get("viewCount", tot[0])),
+                      "subscribers": int(ch.get("subscriberCount", 0))}))
+
+
 QUEUE = ROOT / "queue"
 
 
@@ -430,9 +470,19 @@ def cmd_export(args) -> None:
         "SELECT substr(uploaded_at,1,10) d, COUNT(*) n FROM clips "
         "WHERE uploaded_at IS NOT NULL GROUP BY d")}
     days = [(today - dt.timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
-    recent = [dict(r) for r in con.execute(
-        "SELECT id, streamer, COALESCE(yt_title, title) AS title, youtube_id, uploaded_at, url "
-        "FROM clips WHERE status='uploaded' ORDER BY uploaded_at DESC LIMIT 12")]
+    uploads = [dict(r) for r in con.execute(
+        "SELECT id, streamer, COALESCE(yt_title, title) AS title, youtube_id, uploaded_at, url, "
+        "COALESCE(yt_views,0) AS views, COALESCE(yt_likes,0) AS likes, "
+        "COALESCE(yt_comments,0) AS comments, duration "
+        "FROM clips WHERE status='uploaded' ORDER BY uploaded_at DESC LIMIT 500")]
+    recent = uploads[:12]
+    daily = [dict(r) for r in con.execute(
+        "SELECT date, views, likes, subscribers, videos FROM channel_daily ORDER BY date")][-90:]
+    by_streamer = [dict(r) for r in con.execute(
+        "SELECT streamer, COUNT(*) AS uploads, COALESCE(SUM(yt_views),0) AS views "
+        "FROM clips WHERE status='uploaded' GROUP BY streamer ORDER BY views DESC")]
+    total_views = sum(u["views"] for u in uploads)
+    rate = float(cfg.get("earnings", {}).get("rate_per_1000", 1.0))
     candidates = [dict(r) for r in con.execute(
         "SELECT id, streamer, title, url, views, duration, created_at, score "
         "FROM clips WHERE status='candidate' ORDER BY score DESC LIMIT 15")]
@@ -463,6 +513,15 @@ def cmd_export(args) -> None:
         "today_uploads": per_day.get(today.isoformat(), 0),
         "uploads_by_day": [{"date": d, "n": per_day.get(d, 0)} for d in days],
         "recent_uploads": recent,
+        "uploads": uploads,
+        "channel_daily": daily,
+        "by_streamer": by_streamer,
+        "totals": {"views": total_views,
+                   "likes": sum(u["likes"] for u in uploads),
+                   "comments": sum(u["comments"] for u in uploads),
+                   "subscribers": daily[-1]["subscribers"] if daily else 0,
+                   "rate_per_1000": rate,
+                   "est_earnings": round(total_views / 1000 * rate, 2)},
         "candidates": candidates,
         "queue": queue,
         "failed": failed,
@@ -500,6 +559,7 @@ def main() -> None:
     sub.add_parser("status").set_defaults(fn=cmd_status)
     s = sub.add_parser("auth-youtube"); s.add_argument("--out"); s.set_defaults(fn=cmd_auth_youtube)
     sub.add_parser("publish-queue").set_defaults(fn=cmd_publish_queue)
+    sub.add_parser("stats").set_defaults(fn=cmd_stats)
     s = sub.add_parser("export"); s.add_argument("--out", default=str(ROOT / "docs" / "data.json"))
     s.set_defaults(fn=cmd_export)
     args = p.parse_args()

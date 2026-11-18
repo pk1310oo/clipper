@@ -16,6 +16,9 @@ privacy = "private"     # erst auf "public" stellen, wenn Googles API-Pruefung d
 max_per_day = 5
 language = "en"
 
+[earnings]
+rate_per_1000 = 1.0     # Verguetung pro 1.000 Aufrufe (z. B. Kampagnenrate), nur fuer die Schaetzung in der App
+
 # Ein Block pro Streamer. Ohne permission_proof wird der Streamer uebersprungen.
 [[streamer]]
 login = "beispielkanal"
