@@ -252,6 +252,18 @@ footer { color: var(--text-3); font-size: 12px; text-align: center; margin-top: 
 <script>
 const REPO = "pk1310oo/clipper";
 const GH = "https://github.com/" + REPO;
+// In der Mac-App (Tauri) liegen die Daten nicht neben der Seite: live aus dem Repository laden
+// und Links im Standardbrowser oeffnen statt im App-Fenster.
+const IN_APP = !!window.__TAURI__;
+const DATA_URL = IN_APP ? `https://raw.githubusercontent.com/${REPO}/main/docs/data.json` : "data.json";
+if (IN_APP) {
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("a[href]");
+    if (!a || !/^https?:/.test(a.href)) return;
+    e.preventDefault();
+    window.__TAURI__.opener.openUrl(a.href);
+  });
+}
 const STATUS = {
   good:     { color: "var(--good)",     icon: "✓", label: "Erfolgreich" },
   warning:  { color: "var(--warning)",  icon: "!", label: "Achtung" },
@@ -295,7 +307,7 @@ function nextEditorRun() {
 }
 
 async function loadData() {
-  const res = await fetch("data.json?t=" + Date.now(), { cache: "no-store" });
+  const res = await fetch(DATA_URL + "?t=" + Date.now(), { cache: "no-store" });
   if (!res.ok) throw new Error("data.json nicht gefunden");
   return res.json();
 }

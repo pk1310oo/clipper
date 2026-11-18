@@ -1,0 +1,6 @@
+{
+  "identifier": "default",
+  "description": "Rechte des Hauptfensters: nur Links im Standardbrowser oeffnen",
+  "windows": ["main"],
+  "permissions": ["core:default", "opener:default"]
+}
