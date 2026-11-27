@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-11-26T21:38:38.098290+00:00",
+ "generated_at": "2026-11-27T01:51:41.964288+00:00",
  "settings": {
   "privacy": "private",
   "max_per_day": 5,
@@ -10,10 +10,6 @@
  "counts": {},
  "today_uploads": 0,
  "uploads_by_day": [
-  {
-   "date": "2026-11-13",
-   "n": 0
-  },
   {
    "date": "2026-11-14",
    "n": 0
@@ -64,6 +60,10 @@
   },
   {
    "date": "2026-11-26",
+   "n": 0
+  },
+  {
+   "date": "2026-11-27",
    "n": 0
   }
  ],
@@ -128,6 +128,13 @@
   },
   {
    "date": "2026-11-26",
+   "views": 0,
+   "likes": 0,
+   "subscribers": 0,
+   "videos": 0
+  },
+  {
+   "date": "2026-11-27",
    "views": 0,
    "likes": 0,
    "subscribers": 0,
